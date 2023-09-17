@@ -1,34 +1,48 @@
-local util = require('diaglist.util')
+local api = vim.api
+local util = require("diaglist.util")
+local debounce_trailing = require("diaglist.debounce").debounce_trailing
 
-local M = {
-  debug = false,
-}
+local M = {}
 
-function is_open()
-  return vim.fn.getloclist(0, {winid = 0}).winid ~= 0
+M.title = "Buffer Diagnostics"
+M.change_since_render = false
+
+M.populate_loclist = function(winnr, bufnr)
+    if not M.change_since_render then
+        return
+    end
+
+    local buf_diag = util.get_qflist({
+        bufnr = bufnr,
+    })
+
+    vim.fn.setloclist(winnr, {}, "r", { title = M.title, items = buf_diag })
+    M.change_since_render = false
 end
 
-local function get_as_qfitems()
-  local all_diags = vim.diagnostic.get(0)
-end
-
-
-function M.diagnostics_hook()
-  -- if vim.fn.win_gettype(0) == 'loclist' then
-  --   if M.debug then
-  --     print('loclist is focused, not updating')
-  --   end
-  --   return
-  -- end
-  -- FIXME: check foreign loclist
-  vim.diagnostic.setloclist({
-    open = false,
-  })
+function M.init()
+    M.debounced_populate_loclist = debounce_trailing(M.debounce_ms, M.populate_loclist)
 end
 
 function M.open_buffer_diagnostics()
-  M.diagnostics_hook()
-  vim.api.nvim_command [[lw]]
+    local ft = vim.filetype.match({ buf = 0 })
+    if not ft or ft == "qf" then
+        return
+    end
+    local bufnr = vim.fn.bufnr()
+    local winnr = vim.fn.winnr()
+    vim.api.nvim_create_autocmd("DiagnosticChanged", {
+        buffer = bufnr,
+        group = M.augroup,
+        callback = function()
+            M.change_since_render = true
+            M.debounced_populate_loclist(winnr, bufnr)
+        end,
+    })
+
+    M.change_since_render = true
+    M.populate_loclist(winnr, bufnr)
+    api.nvim_command("lopen")
 end
 
 return M
