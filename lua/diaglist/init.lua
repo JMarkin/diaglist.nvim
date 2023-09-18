@@ -4,8 +4,8 @@ local M = {
     debounce_ms = 150,
 }
 
-local q = require('diaglist.quickfix')
-local l = require('diaglist.loclist')
+local q = require("diaglist.quickfix")
+local l = require("diaglist.loclist")
 
 function M.init(opts)
     local diag_group = vim.api.nvim_create_augroup("diagnostics", { clear = true })
@@ -14,8 +14,8 @@ function M.init(opts)
         opts = {}
     end
 
-    if opts['debug'] ~= nil then
-        M.debug = opts['debug']
+    if opts["debug"] ~= nil then
+        M.debug = opts["debug"]
     end
 
     q.loglevel = M.debug
@@ -23,14 +23,14 @@ function M.init(opts)
     l.augroup = diag_group
     q.augroup = diag_group
 
-    if opts['debounce_ms'] ~= nil then
-        M.debounce_ms = opts['debounce_ms']
+    if opts["debounce_ms"] ~= nil then
+        M.debounce_ms = opts["debounce_ms"]
     end
 
     q.debounce_ms = M.debounce_ms
     l.debounce_ms = M.debounce_ms
-    if opts['buf_clients_only'] ~= nil then
-        M.buf_clients_only = opts['buf_clients_only']
+    if opts["buf_clients_only"] ~= nil then
+        M.buf_clients_only = opts["buf_clients_only"]
     end
 
     q.buf_clients_only = M.buf_clients_only

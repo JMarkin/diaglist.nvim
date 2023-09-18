@@ -31,7 +31,11 @@ M.populate_qflist = function()
         bufnr = nil,
     })
 
-    vim.fn.setqflist({}, "r", { title = M.title, items = all_diagnostics })
+    if #all_diagnostics > 0 then
+        vim.fn.setqflist({}, "r", { title = M.title, items = all_diagnostics })
+    else
+        api.nvim_command("cclose")
+    end
     M.change_since_render = false
 end
 

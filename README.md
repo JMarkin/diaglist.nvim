@@ -10,10 +10,12 @@
     - [x] no conflicts with other commands using quickfix
     - [x] optionally show only current buffer's clients diagnostics
     - [x] debounce
+    - [x] autoclose
 - [x] current buffer diagnostics in loclist
     - [x] live diagnostics update
     - [ ] no conflicts with other commands using loclist
-    - [ ] debounce
+    - [x] debounce
+    - [x] autoclose
 
 ## Setup
 
@@ -28,8 +30,7 @@ lua require("diaglist").init({
 })
 ```
 
-Init sets diag update on `LspDiagnosticsChanged`, `WinEnter`, `BufEnter` for live diagnostics update
-and `QuickFixCmdPre` to avoid conflicts with other commands using quickfix.
+Init sets diag update on `DiagnosticsChanged` for live diagnostics update.
 
 ## Mappings
 
