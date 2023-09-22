@@ -10,7 +10,7 @@ M.au_by_win = {}
 
 M.close_loclist = function(winnr)
     local ll = vim.fn.getloclist(winnr, { all = 0 })
-    if ll.winid then
+    if ll.winid and M.au_by_win[winnr] then
         pcall(vim.api.nvim_win_close, ll.winid, true)
         vim.api.nvim_del_autocmd(M.au_by_win[winnr])
         M.au_by_win[winnr] = nil
@@ -22,6 +22,7 @@ M.populate_loclist = function(winnr, bufnr)
         return
     end
 
+    print(bufnr)
     local buf_diag = util.get_qflist({
         bufnr = bufnr,
     })

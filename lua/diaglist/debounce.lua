@@ -4,11 +4,12 @@ local M = {}
 -- added vim.schedule_wrap
 function M.debounce_trailing(ms, fn)
     local timer = vim.loop.new_timer()
-    return function(argv)
+    return function(...)
+        local argv = { ... }
         timer:start(ms, 0, function()
             timer:stop()
             vim.schedule_wrap(function()
-                fn(argv)
+                fn(unpack(argv))
             end)()
         end)
     end
