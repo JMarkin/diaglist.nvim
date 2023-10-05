@@ -5,24 +5,15 @@ local debounce_trailing = require("diaglist.debounce").debounce_trailing
 local M = {}
 
 M.title = "Buffer Diagnostics"
-M.change_since_render = false
-M.au_by_win = {}
 
 M.close_loclist = function(winnr)
     local ll = vim.fn.getloclist(winnr, { all = 0 })
-    if ll.winid and M.au_by_win[winnr] then
+    if ll.winid ~= 0 then
         pcall(vim.api.nvim_win_close, ll.winid, true)
-        vim.api.nvim_del_autocmd(M.au_by_win[winnr])
-        M.au_by_win[winnr] = nil
     end
 end
 
 M.populate_loclist = function(winnr, bufnr)
-    if not M.change_since_render then
-        return
-    end
-
-    print(bufnr)
     local buf_diag = util.get_qflist({
         bufnr = bufnr,
     })
@@ -30,8 +21,16 @@ M.populate_loclist = function(winnr, bufnr)
     vim.fn.setloclist(winnr, {}, "r", { title = M.title, items = buf_diag })
     if #buf_diag == 0 then
         M.close_loclist(winnr)
+
+        local autocmds = vim.api.nvim_get_autocmds({
+            group = M.augroup,
+            event = "DiagnosticChanged",
+            buffer = bufnr
+        })
+        for _, au in ipairs(autocmds) do
+            vim.api.nvim_del_autocmd(au.id)
+        end
     end
-    M.change_since_render = false
 end
 
 function M.init()
@@ -45,16 +44,14 @@ function M.open_buffer_diagnostics()
     end
     local bufnr = vim.fn.bufnr()
     local winnr = vim.fn.winnr()
-    M.au_by_win[winnr] = vim.api.nvim_create_autocmd("DiagnosticChanged", {
+    vim.api.nvim_create_autocmd("DiagnosticChanged", {
         buffer = bufnr,
         group = M.augroup,
         callback = function()
-            M.change_since_render = true
             M.debounced_populate_loclist(winnr, bufnr)
         end,
     })
 
-    M.change_since_render = true
     M.populate_loclist(winnr, bufnr)
     api.nvim_command("lopen")
 end
